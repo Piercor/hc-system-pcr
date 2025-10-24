@@ -487,7 +487,6 @@ class HCSystem
     }
     public void RequestAppointment(User activeUser)
     {
-        try { Console.Clear(); } catch { }
         Console.WriteLine("\nRequest Appointment\n");
         Console.WriteLine("\nSelect region\n");
 

@@ -3,6 +3,9 @@ namespace App;
 enum Permission
 {
   None,
+  ViewMyJournal,
+  ViewMySchedule,
+  RequestAppointment,
   HandleAccount,
   // - Create Account
   HandleRegistration,
@@ -19,6 +22,8 @@ enum Permission
   ScheduleOfLocation,
   AssignRegion,
   ViewPermissionList,
+  Logout,
+  Quit,
   PermHandlePerm,
 }
 

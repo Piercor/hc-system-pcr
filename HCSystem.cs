@@ -194,6 +194,18 @@ class HCSystem
         // Create new user
         return true;
     }
+
+    public void ViewMyPermissions(User activeUser)
+    {
+        Console.WriteLine("\nMy permissions.\n");
+        foreach (Permission permission in activeUser.Permissions)
+        {
+            Console.WriteLine(permission);
+        }
+        Console.Write("\nPress ENTER to continue. ");
+        Console.ReadKey(true);
+        return;
+    }
     public void PermissionSystem(User? activeUser)
     {
         Debug.Assert(activeUser != null);
@@ -356,6 +368,7 @@ class HCSystem
                 }
             }
         }
+
     }
     public bool CreateAccount()
     {

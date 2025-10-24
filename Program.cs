@@ -34,10 +34,13 @@ while (isRunning)
 
             foreach (User user in sys.users)
             {
-              activeUser = user;
-              currentMenu = Menu.Main;
-              foundUser = true;
-              break;
+              if (user.TryLogin(ssn, password))
+              {
+                activeUser = user;
+                currentMenu = Menu.Main;
+                foundUser = true;
+                break;
+              }
             }
 
             if (!foundUser)
@@ -150,9 +153,8 @@ while (isRunning)
         int index = 1;
 
         Debug.Assert(activeUser != null);
-        // foreach (Permission permission in activeUser.Permissions)
-        // {
-        for (int i = 1; i < activeUser.Permissions.Count - 3; ++i)
+
+        for (int i = 0; i < activeUser.Permissions.Count; ++i)
         {
           menuOptions[index.ToString()] = activeUser.Permissions[i];
           string menuText = $"[{index}] ";
@@ -168,7 +170,9 @@ while (isRunning)
             case Permission.RequestAppointment:
               menuText += "Request an appointment.";
               break;
-
+            case Permission.ViewPermissionList:
+              menuText += "View your permissions";
+              break;
             case Permission.HandleAccount:
               menuText += "Handle accounts.";
               break;
@@ -190,18 +194,15 @@ while (isRunning)
             case Permission.AssignRegion:
               menuText += "Assing user to region.";
               break;
-            case Permission.ViewPermissionList:
-              menuText += "View permissions.";
+            case Permission.PermHandlePerm:
+              menuText += "Manage permissions.";
               break;
           }
           Console.WriteLine(menuText);
           index += 1;
         }
 
-        // menuOptions[index.ToString()] = Permission.Logout;
-        Console.WriteLine($"[X] Log out.");
-        index += 1;
-        // menuOptions[index.ToString()] = Permission.Quit;
+        Console.WriteLine($"\n[X] Log out.");
         Console.WriteLine($"[Q] Quit.");
 
         Console.Write("\n► ");
@@ -240,6 +241,10 @@ while (isRunning)
               try { Console.Clear(); } catch { }
               sys.RequestAppointment(activeUser);
               break;
+            case Permission.ViewPermissionList:
+              try { Console.Clear(); } catch { }
+              sys.ViewMyPermissions(activeUser);
+              break;
             case Permission.HandleAccount:
               try { Console.Clear(); } catch { }
               sys.CreateAccount();
@@ -253,6 +258,12 @@ while (isRunning)
               sys.HandleAppointment();
               Console.ReadKey(true);
               break;
+            case Permission.JournalEntries:
+              try { Console.Clear(); } catch { }
+              Console.WriteLine("\nW I P");
+              Console.Write("\nPress ENTER to go back to previous menu. ");
+              Console.ReadKey(true);
+              break;
             case Permission.AddLocation:
               try { Console.Clear(); } catch { }
               sys.AddLocation();
@@ -263,138 +274,17 @@ while (isRunning)
               sys.ScheduleOfLocation();
               Console.ReadKey(true);
               break;
-            case Permission.ViewPermissionList:
-              try { Console.Clear(); } catch { }
-              sys.PermissionSystem(activeUser);
-              break;
             case Permission.AssignRegion:
               try { Console.Clear(); } catch { }
               sys.AssignToRegion();
               Console.ReadKey(true);
               break;
+            case Permission.PermHandlePerm:
+              try { Console.Clear(); } catch { }
+              sys.PermissionSystem(activeUser);
+              break;
           }
         }
-        /* try { Console.Clear(); } catch { }
-        Console.WriteLine($"\nWelcome, {activeUser?.Name}");
-        Debug.Assert(activeUser != null);
-
-        Console.WriteLine("\n[1] View My Journal");
-        Console.WriteLine("\n[2] View My Schedule");
-        Console.WriteLine("\n[3] Request an appointment.");
-        if (!activeUser.HasPermission(Permission.None))
-        {
-          Console.WriteLine("\n[4] Handle Accounts");
-          Console.WriteLine("\n[5] Handle Registrations");
-          Console.WriteLine("\n[6] Handle Appointment");
-          Console.WriteLine("\n[7] Add a Location");
-          Console.WriteLine("\n[8] Schedule of a Location");
-          Console.WriteLine("\n[9] View Permissions");
-          Console.WriteLine("\n[10] Assign User To Region");
-        }
-        Console.WriteLine("\n[x] Logout");
-        Console.Write("\n► ");
-
-        switch (Console.ReadLine())
-        {
-
-          // View My Journal 
-          case "1":
-            try { Console.Clear(); } catch { }
-            Debug.Assert(activeUser != null);
-            sys.ViewEvent(Event.EventType.Entry, activeUser);
-            Console.ReadKey(true);
-            break;
-
-          // View My Schedule 
-          case "2":
-            try { Console.Clear(); } catch { }
-            Debug.Assert(activeUser != null);
-            sys.ViewEvent(Event.EventType.Appointment, activeUser);
-            Console.ReadKey(true);
-            break;
-
-          // Request Appointment 
-          case "3":
-            sys.RequestAppointment(activeUser);
-            break;
-
-          // Handle Account 
-          case "4":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.HandleAccount))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            sys.CreateAccount();
-            break;
-
-          // Handle Registration 
-          case "5":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.HandleRegistration))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            sys.ViewUserRequests();
-            break;
-
-          // Handle Appointment 
-          case "6":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.HandleAppointment))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            sys.HandleAppointment();
-            Console.ReadKey(true);
-            break;
-
-          // Add Location 
-          case "7":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.AddLocation))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            sys.AddLocation();
-            Console.ReadKey(true);
-            break;
-
-          // Schedule Of Location 
-          case "8":
-            if (!activeUser!.HasPermission(Permission.ScheduleOfLocation))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            try { Console.Clear(); } catch { }
-            sys.ScheduleOfLocation();
-            Console.ReadKey(true);
-            break;
-
-          // View Permissions 
-          case "9":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.PermHandlePerm) && !activeUser!.HasPermission(Permission.ViewPermissionList))
-            {
-              Console.WriteLine("\nYou do not have permission to view others permissions.");
-              Console.WriteLine("\nYour permissions are:");
-              foreach (Permission perm in activeUser.Permissions)
-              {
-                Console.WriteLine($"\n[{activeUser.Permissions.IndexOf(perm) + 1}] {perm}");
-              }
-              Console.Write("\nPress ENTER to go back to previous menu. ");
-              Console.ReadKey(true); break;
-            }
-            sys.PermissionSystem(activeUser);
-            break;
-          case "10":
-            try { Console.Clear(); } catch { }
-            if (!activeUser!.HasPermission(Permission.AssignRegion))
-            { Console.WriteLine("You do not have permission for this."); Console.ReadKey(true); break; }
-            sys.AssignToRegion();
-            Console.ReadKey(true);
-            break;
-          // Log out
-          case "x":
-            activeUser = null;
-            currentMenu = Menu.Default;
-            break;
-
-          default:
-            Console.Write("\nInvalid input. Press ENTER to continue. ");
-            Console.ReadKey(true);
-            break;
-        } */
         break;
     }
   }

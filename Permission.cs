@@ -6,6 +6,7 @@ enum Permission
   ViewMyJournal,
   ViewMySchedule,
   RequestAppointment,
+  ViewPermissionList,
   HandleAccount,
   // - Create Account
   HandleRegistration,
@@ -21,9 +22,6 @@ enum Permission
   // - View Patient Journal
   ScheduleOfLocation,
   AssignRegion,
-  ViewPermissionList,
   PermHandlePerm,
-  Logout,
-  Quit,
 }
 

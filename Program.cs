@@ -28,18 +28,23 @@ while (isRunning)
             string? ssn = Console.ReadLine();
             Console.Write("\nPlease input a password: ");
             string? password = Console.ReadLine();
-
+            bool foundUser = false;
             Debug.Assert(ssn != null);
             Debug.Assert(password != null);
 
             foreach (User user in sys.users)
             {
-              if (user.TryLogin(ssn, password))
-              {
-                activeUser = user;
-                currentMenu = Menu.Main;
-                break;
-              }
+              activeUser = user;
+              currentMenu = Menu.Main;
+              foundUser = true;
+              break;
+            }
+
+            if (!foundUser)
+            {
+              Console.WriteLine("\nNo user was found with those credentials.");
+              Console.Write("\nPress ENTER to continue. ");
+              Console.ReadKey(true);
             }
             break;
           case "2":
@@ -56,7 +61,24 @@ while (isRunning)
               break;
             }
 
-            // int newSSNlenght = newSSN.Length;
+            foreach (Event events in sys.eventList)
+            {
+              if (events.Title.StartsWith(newSSN))
+              {
+                Console.WriteLine("\nThere is already a patient request with the given SSN.");
+                Console.Write("\nPress ENTER to go back to previous menu. ");
+                Console.ReadKey(true);
+                foundSSN = true;
+                break;
+              }
+            }
+
+            if (string.IsNullOrWhiteSpace(newSSN))
+            {
+              Console.WriteLine("\nInvalid input");
+              Console.ReadKey(true);
+              break;
+            }
 
             foreach (Event events in sys.eventList)
             {
@@ -171,12 +193,6 @@ while (isRunning)
             case Permission.ViewPermissionList:
               menuText += "View permissions.";
               break;
-              // case Permission.Logout:
-              //   menuText += "Logout.";
-              //   break;
-              // case Permission.Quit:
-              //   menuText += "Quit.";
-              //   break;
           }
           Console.WriteLine(menuText);
           index += 1;
@@ -247,7 +263,7 @@ while (isRunning)
               sys.ScheduleOfLocation();
               Console.ReadKey(true);
               break;
-            case Permission.PermHandlePerm:
+            case Permission.ViewPermissionList:
               try { Console.Clear(); } catch { }
               sys.PermissionSystem(activeUser);
               break;
@@ -356,7 +372,7 @@ while (isRunning)
               {
                 Console.WriteLine($"\n[{activeUser.Permissions.IndexOf(perm) + 1}] {perm}");
               }
-              Console.Write("\nPress ENTER to go back to previos menu. ");
+              Console.Write("\nPress ENTER to go back to previous menu. ");
               Console.ReadKey(true); break;
             }
             sys.PermissionSystem(activeUser);

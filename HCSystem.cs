@@ -221,7 +221,8 @@ class HCSystem
                 { return; }
                 else if (string.IsNullOrEmpty(userInput))
                 {
-                    Console.Write("\nPlease select a valid user: ");
+                    Console.Write("\nPlease select a valid user. Press ENTER to continue. ");
+                    Console.ReadLine();
                     try { Console.Clear(); } catch { }
                     continue;
                 }
@@ -403,7 +404,7 @@ class HCSystem
     public void ViewUserRequests()
     {
         Event.EventType? eventType = Event.EventType.Request;
-        Console.Clear();
+        try { Console.Clear(); } catch { }
         Console.WriteLine($"\n=== User Requests ===");
 
         List<Event> userRequestList = new List<Event>();
@@ -415,7 +416,13 @@ class HCSystem
                 { userRequestList.Add(singleEvent); }
             }
         }
-        else { Console.WriteLine("Something went wrong, no event type is selected"); Console.ReadKey(true); return; }
+        else
+        {
+            Console.WriteLine("Something went wrong, no event type is selected.");
+            Console.Write("Press ENTER to go back to previous menu. ");
+            Console.ReadKey(true);
+            return;
+        }
 
         if (userRequestList.Count == 0) { Console.WriteLine($"No user requests found."); }
         else
@@ -442,8 +449,8 @@ class HCSystem
         else if (int.TryParse(userInput, out int selectedRequest) && selectedRequest >= 1 && selectedRequest <= userRequestList.Count)
         {
             Event SelectedRequest = userRequestList[selectedRequest - 1];
-            Console.Clear();
-            Console.WriteLine($"\n === Selected Events ===");
+            try { Console.Clear(); } catch { }
+            Console.WriteLine($"\n=== Selected Events ===");
             Console.WriteLine($"\nSSN: {SelectedRequest.Title}");
             Console.WriteLine($"Type: {SelectedRequest.MyEventType}");
             if (!string.IsNullOrWhiteSpace(SelectedRequest.Description))
@@ -451,8 +458,8 @@ class HCSystem
                 Console.WriteLine($"Description: {SelectedRequest.Description}");
             }
 
-            Console.WriteLine("\n === Request Options ===");
-            Console.WriteLine("[1] Accept Request");
+            Console.WriteLine("\n=== Request Options ===");
+            Console.WriteLine("\n[1] Accept Request");
             Console.WriteLine("[2] Deny request");
             Console.WriteLine("[b] Go back");
             Console.Write("\n► ");
@@ -461,29 +468,34 @@ class HCSystem
             string? requestChoice = Console.ReadLine();
             if (requestChoice == "1")
             {
-                Console.Clear();
-                Console.WriteLine($"=== Accept Request ===");
-                Console.WriteLine($"\n Request: {SelectedRequest.Description}");
+                try { Console.Clear(); } catch { }
+                Console.WriteLine($"\n=== Accept Request ===");
+                Console.WriteLine($"\nRequest: {SelectedRequest.Description}");
                 if (CreateAccount())
                 {
                     Console.WriteLine("\nThe request has been accepted and account created.");
                     eventList.Remove(SelectedRequest);
                     SaveEventsToFile();
                 }
-                else { Console.WriteLine("\nFailed to create account. The request has not been accepted."); }
+                else
+                {
+                    Console.WriteLine("\n\nFailed to create account. The request has not been accepted.");
+                    Console.Write("\nPress ENTER to continue. ");
+                    Console.ReadLine();
+                }
             }
             else if (requestChoice == "2")
             {
-                Console.Clear();
-                Console.WriteLine("You have denied the request.");
-                Console.WriteLine("Press ENTER to continue");
+                try { Console.Clear(); } catch { }
+                Console.WriteLine("\nYou have denied the request.");
+                Console.Write("\nPress ENTER to continue. ");
                 eventList.Remove(SelectedRequest);
                 SaveEventsToFile();
                 Console.ReadLine();
             }
             else if (requestChoice == "b") { return; }
         }
-        else { Console.WriteLine("\nWrong input, press ENTER to go back to menu."); Console.ReadKey(true); }
+        else { Console.Write("\nInvalid input, press ENTER to go back to menu. "); Console.ReadKey(true); }
     }
     public void RequestAppointment(User activeUser)
     {
@@ -622,7 +634,7 @@ class HCSystem
                 switch (Console.ReadLine()?.ToLower())
                 {
                     case "y":
-                        Console.Write("\nAppointment time (DD/MM/YY HH:mm:ss): ");
+                        Console.Write("\nAppointment time (DD/MM/YY HH:mm): ");
                         string? dateInput = Console.ReadLine();
 
                         if (!string.IsNullOrWhiteSpace(dateInput))
@@ -736,18 +748,18 @@ class HCSystem
         Console.WriteLine("Name of Location?");
         Console.Write("> ");
         string? locName = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(locName)) { Console.WriteLine("Invalid Input"); return; }
+        if (string.IsNullOrWhiteSpace(locName)) { Console.Write("Invalid Input. Press ENTER to go back to previous menu. "); return; }
         bool check = false;
         foreach (Location location in locations)
         {
             if (location.Name == locName) check = true; break;
         }
-        if (check) { Console.WriteLine("Location already exists"); Console.ReadKey(true); return; }
+        if (check) { Console.Write("Location already exists. Press ENTER to go back to previous menu. "); Console.ReadKey(true); return; }
         try { Console.Clear(); } catch { }
         Console.WriteLine("Address of Location?");
         Console.Write("> ");
         string? locAddress = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(locAddress)) { Console.WriteLine("Invalid Input"); return; }
+        if (string.IsNullOrWhiteSpace(locAddress)) { Console.Write("Invalid Input. Press ENTER to go back to previous menu. "); return; }
         List<Region> regionList = new();
         foreach (Region region in Enum.GetValues(typeof(Region)))
         {
@@ -765,7 +777,7 @@ class HCSystem
         locations.Add(new Location(locName, locAddress, locRegion));
         Console.WriteLine($"Location added: \n{locName}\n{locAddress}\n{locRegion}");
         SaveLocationsToFile();
-        Console.Write("\nPress ENTER to go back to previoud menu. ");
+        Console.Write("\nPress ENTER to go back to previous menu. ");
     }
     public void ScheduleOfLocation()
     {
@@ -811,7 +823,7 @@ class HCSystem
         string? id = Console.ReadLine();
 
         if (string.IsNullOrWhiteSpace(id))
-        { Console.WriteLine("\nInvalid input"); return; }
+        { Console.Write("\nInvalid input. Press ENTER to go back to previous menu. "); return; }
         if (int.TryParse(id, out int index) && index > 0 && index <= users.Count)
         {
             Console.WriteLine("\nSelect region\n");

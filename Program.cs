@@ -183,7 +183,7 @@ while (isRunning)
               menuText += "Handle appointments.";
               break;
             case Permission.JournalEntries:
-              menuText += "View patients journals.";
+              menuText += "Manage journals.";
               break;
             case Permission.AddLocation:
               menuText += "Add a location.";
@@ -202,14 +202,14 @@ while (isRunning)
           index += 1;
         }
 
-        Console.WriteLine($"\n[X] Log out.");
+        Console.WriteLine($"\n[L] Log out.");
         Console.WriteLine($"[Q] Quit.");
 
         Console.Write("\n► ");
         string? menuInput = Console.ReadLine();
         Debug.Assert(menuInput != null);
 
-        if (menuInput.ToLower() == "x")
+        if (menuInput.ToLower() == "l")
         {
           activeUser = null;
           currentMenu = Menu.Default;

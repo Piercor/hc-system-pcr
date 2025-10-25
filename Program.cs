@@ -260,9 +260,8 @@ while (isRunning)
               break;
             case Permission.JournalEntries:
               try { Console.Clear(); } catch { }
-              Console.WriteLine("\nW I P");
-              Console.Write("\nPress ENTER to go back to previous menu. ");
-              Console.ReadKey(true);
+              sys.JournalEntries(activeUser);
+              //Console.ReadKey(true);
               break;
             case Permission.AddLocation:
               try { Console.Clear(); } catch { }

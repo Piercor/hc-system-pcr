@@ -859,6 +859,147 @@ class HCSystem
         }
         else { Console.WriteLine("\nInvalid input"); return; }
     }
+
+    public void JournalEntries(User activeUser)
+    {
+        bool managingJournals = true;
+        while (managingJournals)
+        {
+            try { Console.Clear(); } catch { }
+            Console.WriteLine("\nManage journals\n");
+            foreach (User user in users)
+            {
+                if (user != activeUser)
+                {
+                    Console.WriteLine($"ID: [{users.IndexOf(user) + 1}] - {user.SSN} - {user.Name}");
+                }
+            }
+            Console.Write("\nPress [B] to go back to previous menu. Select user ID to manage journal: ");
+            string? selectedUserString = Console.ReadLine();
+            User? selectedUser = null;
+            Debug.Assert(selectedUserString != null);
+
+            if (selectedUserString.ToLower() == "b")
+            {
+                return;
+            }
+            else if (int.TryParse(selectedUserString, out int selectedUserIndex) && selectedUserIndex > 0 && selectedUserIndex <= users.Count)
+            {
+                if (users[selectedUserIndex - 1] != activeUser)
+                {
+                    selectedUser = users[selectedUserIndex - 1];
+                }
+                else
+                {
+                    Console.Write("\nInvalid input. Press ENTER to continue. ");
+                    Console.ReadLine();
+                    continue;
+                }
+            }
+            else
+            {
+                Console.Write("\nInvalid input. Press ENTER to continue. ");
+                Console.ReadLine();
+                continue;
+            }
+            bool inJournal = true;
+
+            while (inJournal)
+            {
+                try { Console.Clear(); } catch { }
+                Console.WriteLine($"\n{selectedUser.Name}'s journal\n");
+
+                Console.WriteLine("[1] View entries.");
+                Console.WriteLine("[2] Create entry.");
+                Console.WriteLine("[3] Edit entries.");
+                Console.WriteLine("\n[B] Back to previous menu.");
+
+                Console.Write("\n► ");
+
+                switch (Console.ReadLine()?.ToLower())
+                {
+                    case "1":
+                        try { Console.Clear(); } catch { }
+                        ViewEvent(Event.EventType.Entry, selectedUser);
+                        Console.ReadKey(true);
+                        break;
+
+                    case "2":
+                        break;
+
+                    case "3":
+                        try { Console.Clear(); } catch { }
+                        Console.WriteLine($"\nEdit {selectedUser}'s journal entries.");
+                        List<Event> journalEntries = new();
+                        foreach (Event event1 in eventList)
+                        {
+                            if (event1.MyEventType == Event.EventType.Entry && event1.Participants[0].User == selectedUser)
+                            {
+                                journalEntries.Add(event1);
+                            }
+                        }
+                        foreach (Event entry in journalEntries)
+                        {
+                            Console.WriteLine($"\nJournal entry nr: [{journalEntries.IndexOf(entry) + 1}]");
+                            Console.WriteLine($"{entry.Title} | {entry.Description}");
+                            Console.WriteLine($"------------------------");
+                        }
+                        Console.Write("\nPress [B] to go back to previous menu. Select journal entry nr to edit: ");
+                        string? selectedEntryString = Console.ReadLine();
+                        Debug.Assert(selectedEntryString != null);
+
+                        if (selectedEntryString.ToLower() == "b")
+                        {
+                            break;
+                        }
+                        else if (int.TryParse(selectedEntryString, out int entryIndex) && entryIndex > 0 && entryIndex <= journalEntries.Count)
+                        {
+                            try { Console.Clear(); } catch { }
+                            Event? eventToEdit = journalEntries[entryIndex - 1];
+                            Console.WriteLine($"\nEdit {selectedUser.Name}'s journal entry nr: [{journalEntries.IndexOf(eventToEdit) - 1}].");
+
+                            Console.WriteLine($"\nTitle: {eventToEdit.Title}");
+                            Console.WriteLine($"\nDescription: {eventToEdit.Description}");
+                            if (eventToEdit.Location != null)
+                            {
+                                Console.WriteLine($"\nLocation.");
+                                Console.WriteLine($"\nName: {eventToEdit.Location.Name}");
+                                Console.WriteLine($"\nAddress: {eventToEdit.Location.Address}");
+                                Console.WriteLine($"\nRegion: {eventToEdit.Location.Region}");
+                            }
+                            if (eventToEdit.Participants.Count > 1)
+                            {
+                                Console.WriteLine($"Other participants besides {selectedUser.Name}:");
+                                foreach (Participant participant in eventToEdit.Participants)
+                                {
+                                    if (participant.User != selectedUser)
+                                    {
+                                        Console.WriteLine($"\n[{eventToEdit.Participants.IndexOf(participant) + 1}] {participant.User.Name} - {participant.ParticipantRole}");
+                                    }
+                                }
+                            }
+                            Console.Write($"\nChange [T]itle, [D]escription{(eventToEdit.Location != null ? ", [[L]]ocation" : "")} {(eventToEdit.Participants.Count > 1 ? ", [P]articipants" : "")}: ");
+                            Console.ReadLine();
+                        }
+                        else
+                        {
+                            Console.Write("\nInvalid input. Press ENTER to continue. ");
+                            Console.ReadLine();
+                            continue;
+                        }
+                        break;
+
+                    case "b":
+                        inJournal = false;
+                        break;
+                    default:
+                        Console.Write("\nInvalid input. Press ENTER to continue. ");
+                        Console.ReadLine();
+                        continue;
+                }
+            }
+        }
+    }
     public void CheatersDelight()
     {
         Console.Write("\nPlease enter a valid input. ");

@@ -732,7 +732,7 @@ class HCSystem
                         Console.WriteLine("\nTitle:       " + event1.Title);
                         Console.WriteLine("Description: " + event1.Description);
                         if (event1.StartDate != default)
-                        { Console.WriteLine("Start Date:  " + event1.StartDate); }
+                        { Console.WriteLine($"{(event1.EndDate != default ? "Start Date" : "Entry Date")}:  " + event1.StartDate); }
                         if (event1.EndDate != default)
                         { Console.WriteLine("End Date:    " + event1.EndDate); }
                         if (event1.Location != null)
@@ -862,6 +862,21 @@ class HCSystem
 
     public void JournalEntries(User activeUser)
     {
+        bool foundEntry = false;
+        foreach (Event events in eventList)
+        {
+            if (events.MyEventType == Event.EventType.Entry && events.Participants[0].User != activeUser)
+            {
+                foundEntry = true;
+            }
+        }
+        if (!foundEntry)
+        {
+            Console.WriteLine("\nNo journal entries to show were found.");
+            Console.Write("\nPress ENTER to go back to previous menu. ");
+            Console.ReadLine();
+            return;
+        }
         bool managingJournals = true;
         while (managingJournals)
         {
@@ -925,70 +940,335 @@ class HCSystem
                         break;
 
                     case "2":
-                        break;
-
-                    case "3":
                         try { Console.Clear(); } catch { }
-                        Console.WriteLine($"\nEdit {selectedUser}'s journal entries.");
-                        List<Event> journalEntries = new();
-                        foreach (Event event1 in eventList)
+                        Console.WriteLine($"\nCreate a journal entry for {selectedUser.Name}");
+                        string newEntryTitle = "";
+                        Console.Write("\nEntry title: ");
+                        string? titleInput = Console.ReadLine();
+                        if (!string.IsNullOrWhiteSpace(titleInput))
                         {
-                            if (event1.MyEventType == Event.EventType.Entry && event1.Participants[0].User == selectedUser)
-                            {
-                                journalEntries.Add(event1);
-                            }
+                            newEntryTitle = titleInput;
                         }
-                        foreach (Event entry in journalEntries)
+                        else
                         {
-                            Console.WriteLine($"\nJournal entry nr: [{journalEntries.IndexOf(entry) + 1}]");
-                            Console.WriteLine($"{entry.Title} | {entry.Description}");
-                            Console.WriteLine($"------------------------");
-                        }
-                        Console.Write("\nPress [B] to go back to previous menu. Select journal entry nr to edit: ");
-                        string? selectedEntryString = Console.ReadLine();
-                        Debug.Assert(selectedEntryString != null);
-
-                        if (selectedEntryString.ToLower() == "b")
-                        {
+                            Console.Write("\nInvalid input. Press ENTER to go back to previous menu. ");
+                            Console.ReadLine();
                             break;
                         }
-                        else if (int.TryParse(selectedEntryString, out int entryIndex) && entryIndex > 0 && entryIndex <= journalEntries.Count)
+                        Event? newEntry = new(newEntryTitle, Event.EventType.Entry);
+                        Console.Write("\nEntry description: ");
+                        string? newEntryDescription = Console.ReadLine();
+                        if (!string.IsNullOrWhiteSpace(newEntryDescription))
                         {
-                            try { Console.Clear(); } catch { }
-                            Event? eventToEdit = journalEntries[entryIndex - 1];
-                            Console.WriteLine($"\nEdit {selectedUser.Name}'s journal entry nr: [{journalEntries.IndexOf(eventToEdit) - 1}].");
+                            newEntry.Description = newEntryDescription;
+                        }
+                        else
+                        {
+                            Console.Write("\nInvalid input. Press ENTER to go back to previous menu. ");
+                            Console.ReadLine();
+                            break;
+                        }
+                        try { Console.Clear(); } catch { }
+                        Console.WriteLine("\nSelect location's region:\n");
 
-                            Console.WriteLine($"\nTitle: {eventToEdit.Title}");
-                            Console.WriteLine($"\nDescription: {eventToEdit.Description}");
-                            if (eventToEdit.Location != null)
+                        foreach (Region region in Region.GetValues(typeof(Region)))
+                        {
+                            int regionIndex = (int)region;
+                            if (region != Region.None)
+                            { Console.WriteLine($"[{regionIndex}] {region}"); }
+                        }
+                        Console.Write("\nRegion [1-21]: ");
+                        string? selectedRegionIndex = Console.ReadLine();
+
+                        if (int.TryParse(selectedRegionIndex, out int selectedRegion) && selectedRegion > 0 && selectedRegion < 21)
+                        {
+                            Location? selectedLocation = null;
+                            bool foundLocation = false;
+                            Console.WriteLine("");
+                            foreach (Location location in locations)
                             {
-                                Console.WriteLine($"\nLocation.");
-                                Console.WriteLine($"\nName: {eventToEdit.Location.Name}");
-                                Console.WriteLine($"\nAddress: {eventToEdit.Location.Address}");
-                                Console.WriteLine($"\nRegion: {eventToEdit.Location.Region}");
-                            }
-                            if (eventToEdit.Participants.Count > 1)
-                            {
-                                Console.WriteLine($"Other participants besides {selectedUser.Name}:");
-                                foreach (Participant participant in eventToEdit.Participants)
+                                if (selectedRegion == (int)location.Region)
                                 {
-                                    if (participant.User != selectedUser)
-                                    {
-                                        Console.WriteLine($"\n[{eventToEdit.Participants.IndexOf(participant) + 1}] {participant.User.Name} - {participant.ParticipantRole}");
-                                    }
+                                    Console.WriteLine($"ID: [{locations.IndexOf(location) + 1}] - {location.Name}");
+                                    Console.WriteLine($"{location.Address}");
+                                    foundLocation = true;
                                 }
                             }
-                            Console.Write($"\nChange [T]itle, [D]escription{(eventToEdit.Location != null ? ", [[L]]ocation" : "")} {(eventToEdit.Participants.Count > 1 ? ", [P]articipants" : "")}: ");
+                            if (foundLocation)
+                            {
+                                Console.Write("\nSelect location ID: ");
+                                string? selectedLocString = Console.ReadLine();
+
+                                if (int.TryParse(selectedLocString, out int selectedLocID) && selectedLocID > 0 && selectedLocID <= locations.Count)
+                                {
+                                    selectedLocation = locations[selectedLocID - 1];
+                                    newEntry.Location = selectedLocation;
+                                    if ((int)selectedLocation.Region != selectedRegion)
+                                    { Console.Write("\nInvalid input. Press ENTER to continue. "); Console.ReadKey(true); break; }
+                                }
+                                else
+                                {
+                                    Console.Write("\nInvalid input. Press ENTER to continue. "); Console.ReadKey(true); break;
+                                }
+                            }
+                            else
+                            {
+                                Console.Write("\nNo locations found in the selected region. Press ENTER to go back to previous menu. "); Console.ReadKey(true); break;
+                            }
+                        }
+                        else
+                        {
+                            Console.Write("\nInvalid input. Press ENTER to go back to previous menu. "); Console.ReadLine(); break;
+                        }
+
+                        try { Console.Clear(); } catch { }
+                        List<Participant> entryParticipants = new();
+                        entryParticipants.Add(new(selectedUser, Role.Patient));
+                        Console.WriteLine("\nSelect personnel:\n");
+                        foreach (User user in users)
+                        {
+                            if (user != entryParticipants[0].User)
+                            { Console.WriteLine($"ID: [{users.IndexOf(user) + 1}] {user.SSN} - {user.Name}"); }
+                        }
+                        Console.Write("\nSelect ID of the personnel, write [X] if none: ");
+                        string? personnelString = Console.ReadLine();
+                        if (int.TryParse(personnelString, out int personnelIndex) && personnelIndex > 0 && personnelIndex <= users.Count)
+                        {
+                            entryParticipants.Add(new Participant(users[personnelIndex - 1], Role.Personnel));
+                        }
+                        else if (personnelString?.ToLower() == "x")
+                        {
+                            Console.WriteLine("\nNo personnel selected for this entry.");
+                            Console.Write("\nPress ENTER to continue. ");
                             Console.ReadLine();
                         }
                         else
                         {
                             Console.Write("\nInvalid input. Press ENTER to continue. ");
                             Console.ReadLine();
-                            continue;
+                            break;
                         }
+                        newEntry.MyEventType = Event.EventType.Entry;
+                        newEntry.Participants = entryParticipants;
+                        newEntry.StartDate = DateTime.Now;
+                        eventList.Add(newEntry);
+                        SaveEventsToFile();
+                        Console.WriteLine("\nNew entry sucessfully created.");
+                        Console.Write("\nPress ENTER to go back to previous menu. ");
+                        Console.ReadLine();
                         break;
 
+                    case "3":
+                        bool isEditing = true;
+                        while (isEditing)
+                        {
+                            try { Console.Clear(); } catch { }
+                            Console.WriteLine($"\nEdit {selectedUser.Name}'s journal entries.");
+                            List<Event> journalEntries = new();
+                            foreach (Event event1 in eventList)
+                            {
+                                if (event1.MyEventType == Event.EventType.Entry && event1.Participants[0].User == selectedUser)
+                                {
+                                    journalEntries.Add(event1);
+                                }
+                            }
+                            foreach (Event entry in journalEntries)
+                            {
+                                Console.WriteLine($"\nJournal entry nr: [{journalEntries.IndexOf(entry) + 1}]");
+                                Console.WriteLine($"{entry.Title} | {entry.Description}");
+                                Console.WriteLine($"------------------------");
+                            }
+                            Console.Write("\nPress [B] to go back to previous menu. Select journal entry nr to edit: ");
+                            string? selectedEntryString = Console.ReadLine();
+                            Debug.Assert(selectedEntryString != null);
+
+                            if (selectedEntryString.ToLower() == "b")
+                            {
+                                break;
+                            }
+                            else if (int.TryParse(selectedEntryString, out int entryIndex) && entryIndex > 0 && entryIndex <= journalEntries.Count)
+                            {
+                                bool stillEditing = true;
+                                while (stillEditing)
+                                {
+                                    try { Console.Clear(); } catch { }
+                                    Event? eventToEdit = journalEntries[entryIndex - 1];
+                                    Console.WriteLine($"\nEdit {selectedUser.Name}'s journal entry nr: [{journalEntries.IndexOf(eventToEdit) + 1}].");
+
+                                    Console.WriteLine($"\nTitle: {eventToEdit.Title}");
+                                    Console.WriteLine($"\nDescription: {eventToEdit.Description}");
+                                    if (eventToEdit.Location != null)
+                                    {
+                                        Console.WriteLine($"\nLocation.");
+                                        Console.WriteLine($"\nName: {eventToEdit.Location.Name}");
+                                        Console.WriteLine($"\nAddress: {eventToEdit.Location.Address}");
+                                        Console.WriteLine($"\nRegion: {eventToEdit.Location.Region}");
+                                    }
+                                    if (eventToEdit.Participants.Count > 1)
+                                    {
+                                        Console.WriteLine($"\nOther participants besides {selectedUser.Name}:");
+                                        foreach (Participant participant in eventToEdit.Participants)
+                                        {
+                                            if (participant.User != selectedUser)
+                                            {
+                                                Console.WriteLine($"\n[{eventToEdit.Participants.IndexOf(participant) + 1}] {participant.User.Name} - {participant.ParticipantRole}");
+                                            }
+                                        }
+                                    }
+                                    Console.WriteLine($"\nPress [B] to go back to previous menu. Press [X] to delete entry.");
+                                    Console.Write($"Change [T]itle, [D]escription, [L]ocation, [P]articipants: ");
+                                    switch (Console.ReadLine()?.ToLower())
+                                    {
+                                        case "b":
+                                            stillEditing = false;
+                                            break;
+                                        case "x":
+                                            Console.WriteLine($"\nJournal entry nr [{journalEntries.IndexOf(eventToEdit) + 1}] '{eventToEdit.Title}' deleted.");
+                                            Console.Write($"\nPress ENTER to go back to main menu. ");
+                                            Console.ReadLine();
+                                            eventList.Remove(eventToEdit);
+                                            journalEntries.Remove(eventToEdit);
+                                            SaveEventsToFile();
+                                            return;
+                                        case "t":
+                                            Console.Write("\nNew title: ");
+                                            string? newTitle = Console.ReadLine();
+                                            if (!string.IsNullOrWhiteSpace(newTitle))
+                                            {
+                                                eventToEdit.Title = newTitle;
+                                                SaveEventsToFile();
+                                                Console.WriteLine($"\nEntry title is now '{newTitle}'");
+                                                Console.Write($"\nPress ENTER to go back to previous menu. ");
+                                                Console.ReadLine();
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                Console.ReadLine();
+                                                break;
+                                            }
+                                        case "d":
+                                            Console.Write("\nNew description: ");
+                                            string? newDescription = Console.ReadLine();
+                                            if (!string.IsNullOrWhiteSpace(newDescription))
+                                            {
+                                                eventToEdit.Description = newDescription;
+                                                SaveEventsToFile();
+                                                Console.WriteLine($"\nEntry description is now '{newDescription}'");
+                                                Console.Write($"\nPress ENTER to go back to previous menu. ");
+                                                Console.ReadLine();
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                Console.ReadLine();
+                                                break;
+                                            }
+                                        case "l":
+                                            string? locInput = "";
+                                            if (eventToEdit.Location != null)
+                                            {
+                                                Console.Write("\n[C]hange or [D]elete location? ");
+                                                locInput = Console.ReadLine()?.ToLower();
+                                            }
+                                            else
+                                            {
+                                                locInput = "c";
+                                            }
+                                            switch (locInput)
+                                            {
+                                                case "d":
+                                                    if (eventToEdit.Location != null)
+                                                    {
+                                                        eventToEdit.Location = null;
+                                                        SaveEventsToFile();
+                                                        Console.WriteLine("\nEntry's location sucessfully removed.");
+                                                        Console.Write("\nPress ENTER to continue. ");
+                                                        Console.ReadLine();
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                        Console.ReadLine();
+                                                    }
+                                                    break;
+                                                case "c":
+                                                    try { Console.Clear(); } catch { }
+                                                    Console.WriteLine("\nSelect location's region:\n");
+
+                                                    foreach (Region region in Region.GetValues(typeof(Region)))
+                                                    {
+                                                        int regionIndex = (int)region;
+                                                        if (region != Region.None)
+                                                        { Console.WriteLine($"[{regionIndex}] {region}"); }
+                                                    }
+                                                    Console.Write("\nRegion [1-21]: ");
+                                                    string? newRegionIndex = Console.ReadLine();
+
+                                                    if (int.TryParse(newRegionIndex, out int newSelectedRegion) && newSelectedRegion > 0 && newSelectedRegion < 21)
+                                                    {
+                                                        Location? selectedLocation = null;
+                                                        bool foundLocation = false;
+                                                        Console.WriteLine("");
+                                                        foreach (Location location in locations)
+                                                        {
+                                                            if (newSelectedRegion == (int)location.Region)
+                                                            {
+                                                                Console.WriteLine($"ID: [{locations.IndexOf(location) + 1}] - {location.Name}");
+                                                                Console.WriteLine($"{location.Address}");
+                                                                foundLocation = true;
+                                                            }
+                                                        }
+                                                        if (foundLocation)
+                                                        {
+                                                            Console.Write("\nSelect location ID: ");
+                                                            string? selectedLocString = Console.ReadLine();
+
+                                                            if (int.TryParse(selectedLocString, out int selectedLocID) && selectedLocID > 0 && selectedLocID <= locations.Count)
+                                                            {
+                                                                selectedLocation = locations[selectedLocID - 1];
+                                                                eventToEdit.Location = selectedLocation;
+                                                                if ((int)selectedLocation.Region != newSelectedRegion)
+                                                                { Console.Write("\nInvalid input. Press ENTER to continue. "); Console.ReadKey(true); break; }
+                                                                SaveEventsToFile();
+                                                                Console.WriteLine("\nEntry's location sucessfully changed.");
+                                                                Console.Write("\nPress ENTER to continue. ");
+                                                                Console.ReadLine();
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.Write("\nInvalid input. Press ENTER to continue. "); Console.ReadKey(true); break;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.Write("\nNo locations found in the selected region. Press ENTER to go back to previous menu. "); Console.ReadKey(true); break;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.Write("\nInvalid input. Press ENTER to go back to previous menu. "); Console.ReadLine(); break;
+                                                    }
+                                                    break;
+                                                default: Console.Write("\nInvalid input. Press ENTER to go back to previous menu. "); Console.ReadLine(); break;
+                                            }
+                                            break;
+
+                                        case "p":
+                                            break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                Console.ReadLine();
+                                continue;
+                            }
+                        }
+                        break;
                     case "b":
                         inJournal = false;
                         break;

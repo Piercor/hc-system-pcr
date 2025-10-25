@@ -161,6 +161,9 @@ while (isRunning)
 
           switch (activeUser.Permissions[i])
           {
+            case Permission.None:
+              menuText = "Your request hasn't been accepted yet.";
+              break;
             case Permission.ViewMyJournal:
               menuText += "View my journal.";
               break;

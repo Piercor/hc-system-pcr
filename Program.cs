@@ -176,7 +176,7 @@ while (isRunning)
               }
               if (!foundRequest)
               {
-                string newDescription = $"User {activeUser.SSN}, with name '{activeUser.Name}' request to be a patient.";
+                string newDescription = $"User with SSN '{activeUser.SSN}' and name '{activeUser.Name}' request to be a patient.";
                 Event? newEvent = new("PatientRequest", Event.EventType.Request);
                 newEvent.Description = newDescription;
                 newEvent.Participants.Add(new(activeUser, Role.None));
@@ -212,7 +212,7 @@ while (isRunning)
               break;
             case Permission.HandleRegistration:
               try { Console.Clear(); } catch { }
-              sys.ViewUserRequests();
+              sys.ViewUserRequests(activeUser);
               break;
             case Permission.HandleAppointment:
               try { Console.Clear(); } catch { }

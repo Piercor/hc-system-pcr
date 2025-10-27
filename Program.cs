@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
@@ -93,7 +94,7 @@ while (isRunning)
           switch (activeUser.Permissions[i])
           {
             case Permission.None:
-              menuText = "Your account hasn't been accepted yet.";
+              menuText += "Send patient request.";
               break;
             case Permission.ViewMyJournal:
               menuText += "View my journal.";
@@ -159,6 +160,32 @@ while (isRunning)
         {
           switch (menuOptions[menuInput])
           {
+            case Permission.None:
+              try { Console.Clear(); } catch { }
+              bool foundRequest = false;
+              foreach (Event events in sys.eventList)
+              {
+                if (events.MyEventType == Event.EventType.Request && events.Title == "PatientRequest" && events.Participants[0].User == activeUser)
+                {
+                  foundRequest = true;
+                  Console.WriteLine("\nYou have already sent a patient request.");
+                  Console.Write("\nPress ENTER to continue.");
+                  Console.ReadLine();
+                  break;
+                }
+              }
+              if (!foundRequest)
+              {
+                string newDescription = $"User {activeUser.SSN}, with name '{activeUser.Name}' request to be a patient.";
+                Event? newEvent = new("PatientRequest", Event.EventType.Request);
+                newEvent.Description = newDescription;
+                newEvent.Participants.Add(new(activeUser, Role.None));
+                sys.eventList.Add(newEvent);
+                sys.SaveEventsToFile();
+                Console.Write("\nPatient request sent. Press ENTER to continue. ");
+                Console.ReadLine();
+              }
+              break;
             case Permission.ViewMyJournal:
               try { Console.Clear(); } catch { }
               Debug.Assert(activeUser != null);

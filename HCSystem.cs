@@ -1313,7 +1313,105 @@ class HCSystem
                                             break;
 
                                         case "p":
+                                            bool editingParticipants = true;
+                                            while (editingParticipants)
+                                            {
+                                                try { Console.Clear(); } catch { }
+                                                Console.WriteLine($"\nParticipants in {selectedUser.Name}'s journal entry nr: [{journalEntries.IndexOf(eventToEdit) + 1}]\n");
+                                                foreach (Participant participant in eventToEdit.Participants)
+                                                {
+                                                    if (participant != eventToEdit.Participants[0])
+                                                    {
+                                                        Console.WriteLine($"ID: [{eventToEdit.Participants.IndexOf(participant)}] {participant.User.Name} - Role: {participant.ParticipantRole}");
+                                                    }
+                                                }
+                                                Console.WriteLine("\n[A]dd or [R]emove participants?");
+                                                Console.Write("Press [B] to go back to previous menu: ");
+                                                switch (Console.ReadLine()?.ToLower())
+                                                {
+                                                    case "b": editingParticipants = false; break;
+                                                    case "a":
+                                                        bool addingParticipants = true;
+                                                        while (addingParticipants)
+                                                        {
+                                                            Console.WriteLine("\nAdd a new participant.");
+
+                                                            List<User> elegibleUsers = new();
+
+                                                            foreach (User user in users)
+                                                            {
+                                                                elegibleUsers.Add(user);
+                                                            }
+                                                            foreach (Participant participant in eventToEdit.Participants)
+                                                            {
+                                                                elegibleUsers.Remove(participant.User);
+                                                            }
+
+                                                            foreach (User partUser in elegibleUsers)
+                                                            {
+                                                                Console.WriteLine($"\nID: [{elegibleUsers.IndexOf(partUser) + 1}] - SSN: {partUser.SSN} - Name: {partUser.Name}");
+                                                            }
+                                                            Console.WriteLine("\nSelect ID of participant to add.");
+                                                            Console.Write("Press [D] when you're done adding participants: ");
+                                                            string? selectedParticipantString = Console.ReadLine();
+                                                            if (selectedParticipantString == "d")
+                                                            {
+                                                                addingParticipants = false;
+                                                            }
+                                                            else if (int.TryParse(selectedParticipantString, out int participantIndex) && participantIndex > 0 && participantIndex <= elegibleUsers.Count)
+                                                            {
+                                                                Participant newParticipant = new(elegibleUsers[participantIndex - 1], Role.None);
+                                                                Console.WriteLine("\nRole? Press [B] to go back to previous menu: ");
+                                                                Console.Write("[1] Patient, [2] Personnel, [3] Admin, [4] SuperAdmin, ");
+                                                                bool selectedRole = true;
+                                                                switch (Console.ReadLine()?.ToLower())
+                                                                {
+                                                                    case "b": selectedRole = false; break;
+                                                                    case "1": newParticipant.ParticipantRole = Role.Patient; break;
+                                                                    case "2": newParticipant.ParticipantRole = Role.Personnel; break;
+                                                                    case "3": newParticipant.ParticipantRole = Role.Admin; break;
+                                                                    case "4": newParticipant.ParticipantRole = Role.SuperAdmin; break;
+                                                                    default:
+                                                                        Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                                        Console.ReadLine();
+                                                                        try { Console.Clear(); } catch { }
+                                                                        continue;
+                                                                }
+                                                                if (selectedRole)
+                                                                {
+                                                                    eventToEdit.Participants.Add(newParticipant);
+                                                                    SaveEventsToFile();
+                                                                    Console.WriteLine($"\n{newParticipant.User.Name} added as a {newParticipant.ParticipantRole} in {selectedUser.Name}'s journal entry nr: [{journalEntries.IndexOf(eventToEdit) + 1}] ");
+                                                                    Console.Write("\nPress ENTER to continue. ");
+                                                                    Console.ReadLine();
+                                                                    try { Console.Clear(); } catch { }
+                                                                }
+                                                                else
+                                                                {
+                                                                    break;
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                                Console.ReadLine();
+                                                                try { Console.Clear(); } catch { }
+                                                                continue;
+                                                            }
+                                                        }
+                                                        break;
+
+                                                    case "r":
+                                                        break;
+                                                    default:
+                                                        Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                        Console.ReadLine(); continue;
+                                                }
+                                            }
                                             break;
+                                        default:
+                                            Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                            Console.ReadLine(); continue;
                                     }
                                 }
                             }

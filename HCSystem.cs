@@ -372,47 +372,90 @@ class HCSystem
     }
     public bool CreateAccount()
     {
-        Console.Write("\nEnter SSN for new User: ");
-        string? newSSN = Console.ReadLine()?.Trim();
+        try { Console.Clear(); } catch { }
+        Console.WriteLine("\nCreate new account.");
+        Console.WriteLine("\nPress [X] at any time to cancel.");
+        bool creatingAccount = true;
 
-        if (string.IsNullOrWhiteSpace(newSSN))
-        { Console.Write("\nInvalid SSN. Press ENTER to go back to previous menu. "); Console.ReadKey(true); return false; }
-
-        Console.Write("Enter password for new User: ");
-        string? newPassword = Console.ReadLine();
-
-        if (newPassword == null)
-        { Console.Write("\nInvalid password. Press ENTER to go back to previous menu. "); Console.ReadKey(true); return false; }
-
-        Console.Write("Enter name for new User: ");
-        string? newName = Console.ReadLine();
-
-        if (string.IsNullOrWhiteSpace(newName))
-        { Console.Write("\nInvalid name. Press ENTER to go back to previous menu. "); Console.ReadLine(); return false; }
-        if (CheckUser(newSSN))
+        while (creatingAccount)
         {
-            User newUser = new(newSSN, newPassword, newName);
-            users.Add(newUser);
-            SaveUsersToFile();
-            Event? newEntry = new($"{newSSN} First Entry", Event.EventType.Entry);
+            Console.Write("\nEnter SSN for new User: ");
+            string? newSSN = Console.ReadLine()?.Trim();
 
-            newEntry.Description = $"{newName}'s account was created";
-            newEntry.StartDate = DateTime.Now;
-            newEntry.Participants.Add(new Participant(newUser, Role.None));
-            eventList.Add(newEntry);
-            SaveEventsToFile();
+            Debug.Assert(newSSN != null);
+            if (newSSN.ToLower() == "x") { return false; }
 
-            Console.WriteLine($"\nUser account created successfully for {newName}!");
-            Console.Write("\nPress ENTER to go back to previous menu. ");
-            Console.ReadLine();
-            return true;
+            if (string.IsNullOrWhiteSpace(newSSN))
+            { Console.Write("\nInvalid SSN. Press ENTER to continue. "); Console.ReadKey(true); Console.WriteLine(""); continue; }
+
+            bool cAPass = true;
+            while (cAPass)
+            {
+                Console.Write("\nEnter password for new User: ");
+                string? newPassword = Console.ReadLine();
+
+                Debug.Assert(newPassword != null);
+                if (newPassword.ToLower() == "x") { return false; }
+
+                if (newPassword == null)
+                { Console.Write("\nInvalid password. Press ENTER to continue. "); Console.ReadKey(true); Console.WriteLine(""); continue; }
+                else if (newPassword == newSSN) { Console.Write("\nPassword can't be the same as SSN. Press ENTER to continue. "); Console.ReadKey(true); Console.WriteLine(""); continue; }
+
+                bool cARepPass = true;
+                while (cARepPass)
+                {
+                    Console.Write("Repeat password: ");
+                    string? repPassword = Console.ReadLine();
+
+                    Debug.Assert(repPassword != null);
+                    if (repPassword.ToLower() == "x") { return false; }
+
+                    if (repPassword != newPassword)
+                    {
+                        { Console.Write("\nPassword doesn't match. Press ENTER to continue. "); Console.ReadKey(true); Console.WriteLine(""); continue; }
+                    }
+                    bool cAName = true;
+
+                    while (cAName)
+                    {
+                        Console.Write("\nEnter name for new User: ");
+                        string? newName = Console.ReadLine();
+
+                        Debug.Assert(newName != null);
+                        if (newName.ToLower() == "x") { return false; }
+
+                        if (string.IsNullOrWhiteSpace(newName))
+                        { Console.Write("\nInvalid name. Press ENTER to continue. "); Console.ReadLine(); Console.WriteLine(""); continue; }
+
+                        if (CheckUser(newSSN))
+                        {
+                            User newUser = new(newSSN, newPassword, newName);
+                            users.Add(newUser);
+                            SaveUsersToFile();
+                            Event? newEntry = new($"{newSSN} First Entry", Event.EventType.Entry);
+
+                            newEntry.Description = $"{newName}'s account was created";
+                            newEntry.StartDate = DateTime.Now;
+                            newEntry.Participants.Add(new Participant(newUser, Role.None));
+                            eventList.Add(newEntry);
+                            SaveEventsToFile();
+
+                            Console.WriteLine($"\nUser account created successfully for {newName}!");
+                            Console.Write("\nPress ENTER to go back to previous menu. ");
+                            Console.ReadLine();
+                            return true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("\nFailed to create account. A user with this SSN already exists.");
+                            Console.Write("\nPress ENTER to go back to previous menu. ");
+                            Console.ReadKey(true); return false;
+                        }
+                    }
+                }
+            }
         }
-        else
-        {
-            Console.WriteLine("\nFailed to create account. A user with this SSN already exists.");
-            Console.Write("\nPress ENTER to go back to previous menu. ");
-            Console.ReadKey(true); return false;
-        }
+        return false;
     }
     public void ViewUserRequests()
     {

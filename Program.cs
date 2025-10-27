@@ -17,7 +17,7 @@ while (isRunning)
     {
       case Menu.Default:
         try { Console.Clear(); } catch { }
-        Console.WriteLine("\n[1] Login \n[2] Request registration as a patient\n[3] Quit");
+        Console.WriteLine("\n[1] Login \n[2] Create account\n[3] Quit");
         Console.Write("\n► ");
         string? input = Console.ReadLine();
 
@@ -50,78 +50,9 @@ while (isRunning)
               Console.ReadKey(true);
             }
             break;
+
           case "2":
-
-            bool foundSSN = false;
-
-            Console.Write("\nPlease input your SSN: ");
-            string? newSSN = Console.ReadLine()?.Trim();
-
-            if (string.IsNullOrWhiteSpace(newSSN))
-            {
-              Console.WriteLine("\nInvalid input");
-              Console.ReadKey(true);
-              break;
-            }
-
-            foreach (Event events in sys.eventList)
-            {
-              if (events.Title.StartsWith(newSSN))
-              {
-                Console.WriteLine("\nThere is already a patient request with the given SSN.");
-                Console.Write("\nPress ENTER to go back to previous menu. ");
-                Console.ReadKey(true);
-                foundSSN = true;
-                break;
-              }
-            }
-
-            if (string.IsNullOrWhiteSpace(newSSN))
-            {
-              Console.WriteLine("\nInvalid input");
-              Console.ReadKey(true);
-              break;
-            }
-
-            foreach (Event events in sys.eventList)
-            {
-              if (events.Title.StartsWith(newSSN))
-              {
-                Console.WriteLine("\nThere is already a patient request with the given SSN.");
-                Console.Write("\nPress ENTER to go back to previous menu. ");
-                Console.ReadKey(true);
-                foundSSN = true;
-                break;
-              }
-            }
-
-            if (!foundSSN)
-            {
-              Console.Write("\nPlease input an email: ");
-              string? newEmail = Console.ReadLine();
-              Console.Write("\nWhat is your name? ");
-              string? newName = Console.ReadLine();
-              if (string.IsNullOrWhiteSpace(newName))
-              {
-                Console.WriteLine("\nInvalid input");
-                Console.ReadKey(true);
-                break;
-              }
-              Debug.Assert(newSSN != null);
-              Debug.Assert(newEmail != null);
-              Debug.Assert(newName != null);
-
-              string newDescription = $"{newSSN} request to be a patient. Name: {newName} - Email: {newEmail}";
-              Event? newEvent = new($"{newSSN} PatientRequest", Event.EventType.Request);
-              newEvent.Description = newDescription;
-
-              sys.eventList.Add(newEvent);
-              sys.SaveEventsToFile();
-
-              Console.WriteLine($"\nYour request have been registered. We'll let you know at {newEmail} when we have made a decision.");
-              Console.Write("\nPress ENTER to continue. ");
-              Console.ReadKey(true);
-            }
+            sys.CreateAccount();
             break;
 
           case "3":
@@ -162,7 +93,7 @@ while (isRunning)
           switch (activeUser.Permissions[i])
           {
             case Permission.None:
-              menuText = "Your request hasn't been accepted yet.";
+              menuText = "Your account hasn't been accepted yet.";
               break;
             case Permission.ViewMyJournal:
               menuText += "View my journal.";

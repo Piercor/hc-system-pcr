@@ -385,8 +385,15 @@ class HCSystem
             Debug.Assert(newSSN != null);
             if (newSSN.ToLower() == "x") { return false; }
 
+
             if (string.IsNullOrWhiteSpace(newSSN))
             { Console.Write("\nInvalid SSN. Press ENTER to continue. "); Console.ReadKey(true); Console.WriteLine(""); continue; }
+            else if (!CheckUser(newSSN))
+            {
+                Console.WriteLine("\nFailed to create account. A user with this SSN already exists.");
+                Console.Write("\nPress ENTER to go back to previous menu. ");
+                Console.ReadKey(true); return false;
+            }
 
             bool cAPass = true;
             while (cAPass)
@@ -427,131 +434,137 @@ class HCSystem
                         if (string.IsNullOrWhiteSpace(newName))
                         { Console.Write("\nInvalid name. Press ENTER to continue. "); Console.ReadLine(); Console.WriteLine(""); continue; }
 
-                        if (CheckUser(newSSN))
-                        {
-                            User newUser = new(newSSN, newPassword, newName);
-                            users.Add(newUser);
-                            SaveUsersToFile();
-                            Event? newEntry = new($"{newSSN} First Entry", Event.EventType.Entry);
+                        User newUser = new(newSSN, newPassword, newName);
+                        users.Add(newUser);
+                        SaveUsersToFile();
+                        Event? newEntry = new($"{newSSN} First Entry", Event.EventType.Entry);
 
-                            newEntry.Description = $"{newName}'s account was created";
-                            newEntry.StartDate = DateTime.Now;
-                            newEntry.Participants.Add(new Participant(newUser, Role.None));
-                            eventList.Add(newEntry);
-                            SaveEventsToFile();
+                        newEntry.Description = $"{newName}'s account was created";
+                        newEntry.StartDate = DateTime.Now;
+                        newEntry.Participants.Add(new Participant(newUser, Role.None));
+                        eventList.Add(newEntry);
+                        SaveEventsToFile();
 
-                            Console.WriteLine($"\nUser account created successfully for {newName}!");
-                            Console.Write("\nPress ENTER to go back to previous menu. ");
-                            Console.ReadLine();
-                            return true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("\nFailed to create account. A user with this SSN already exists.");
-                            Console.Write("\nPress ENTER to go back to previous menu. ");
-                            Console.ReadKey(true); return false;
-                        }
+                        Console.WriteLine($"\nUser account successfully created for {newName}!");
+                        Console.Write("\nPress ENTER to go back to previous menu. ");
+                        Console.ReadLine();
+                        return true;
                     }
                 }
             }
         }
         return false;
     }
-    public void ViewUserRequests()
+    public void ViewUserRequests(User? activeUser)
     {
-        Event.EventType? eventType = Event.EventType.Request;
-        try { Console.Clear(); } catch { }
-        Console.WriteLine($"\n=== User Requests ===");
-
-        List<Event> userRequestList = new List<Event>();
-        if (eventType != null)
+        bool patReq = true;
+        while (patReq)
         {
+
+            try { Console.Clear(); } catch { }
+            Console.WriteLine($"\n=== Patient Requests ===");
+
+            List<Event> patientRequestList = new List<Event>();
+
             foreach (Event singleEvent in eventList)
             {
-                if (singleEvent.MyEventType == eventType && singleEvent.Title != "AppointmentRequest")
-                { userRequestList.Add(singleEvent); }
+                if (singleEvent.MyEventType == Event.EventType.Request && singleEvent.Title == "PatientRequest")
+                { patientRequestList.Add(singleEvent); }
             }
-        }
-        else
-        {
-            Console.WriteLine("Something went wrong, no event type is selected.");
-            Console.Write("Press ENTER to go back to previous menu. ");
-            Console.ReadKey(true);
-            return;
-        }
+            if (patientRequestList.Count <= 0)
+            {
+                Console.WriteLine("\nNo patients requests to show.");
+                Console.Write("\nPress ENTER to go back to previous menu. ");
+                Console.ReadKey(true);
+                return;
+            }
 
-        if (userRequestList.Count == 0) { Console.WriteLine($"No user requests found."); }
-        else
-        {
             int index = 1;
-            foreach (Event events in userRequestList)
+            foreach (Event events in patientRequestList)
             {
                 Console.WriteLine($"\n --- {index++} ---");
-                Console.WriteLine($"\nTitle: {events.Title}");
-                Console.WriteLine($"Type: {events.MyEventType}");
-                if (!string.IsNullOrWhiteSpace(events.Description))
-                {
-                    Console.WriteLine($"Description: {events.Description}");
-                }
+                Console.WriteLine($"\n{events.Description}");
                 Console.WriteLine("------------------------");
             }
-        }
-        Console.Write("\nPress [b] to go back or select a number to select a request. ");
 
-        string? userInput = Console.ReadLine();
+            Console.Write("\nPress [b] to go back or select a number to select a request. ");
 
-        if (userInput == "b") { return; }
+            string? userInput = Console.ReadLine();
 
-        else if (int.TryParse(userInput, out int selectedRequest) && selectedRequest >= 1 && selectedRequest <= userRequestList.Count)
-        {
-            Event SelectedRequest = userRequestList[selectedRequest - 1];
-            try { Console.Clear(); } catch { }
-            Console.WriteLine($"\n=== Selected Events ===");
-            Console.WriteLine($"\nSSN: {SelectedRequest.Title}");
-            Console.WriteLine($"Type: {SelectedRequest.MyEventType}");
-            if (!string.IsNullOrWhiteSpace(SelectedRequest.Description))
+            if (userInput == "b") { return; }
+
+            else if (int.TryParse(userInput, out int selectedRequest) && selectedRequest > 0 && selectedRequest <= patientRequestList.Count)
             {
-                Console.WriteLine($"Description: {SelectedRequest.Description}");
-            }
-
-            Console.WriteLine("\n=== Request Options ===");
-            Console.WriteLine("\n[1] Accept Request");
-            Console.WriteLine("[2] Deny request");
-            Console.WriteLine("[b] Go back");
-            Console.Write("\n► ");
-
-
-            string? requestChoice = Console.ReadLine();
-            if (requestChoice == "1")
-            {
+                Event newRequest = patientRequestList[selectedRequest - 1];
+                User? requestingUser = newRequest.Participants[0].User;
                 try { Console.Clear(); } catch { }
-                Console.WriteLine($"\n=== Accept Request ===");
-                Console.WriteLine($"\nRequest: {SelectedRequest.Description}");
-                if (CreateAccount())
+                Console.WriteLine($"\n=== Selected request ===");
+                Console.WriteLine($"\nSSN: {requestingUser.SSN}");
+                Console.WriteLine($"Name: {requestingUser.Name}");
+                if (!string.IsNullOrWhiteSpace(newRequest.Description))
                 {
-                    Console.WriteLine("\nThe request has been accepted and account created.");
-                    eventList.Remove(SelectedRequest);
-                    SaveEventsToFile();
+                    Console.WriteLine($"Description: {newRequest.Description}");
                 }
-                else
+
+                Console.WriteLine("\n=== Request Options ===");
+                Console.WriteLine("\n[1] Accept Request");
+                Console.WriteLine("[2] Deny request");
+                Console.WriteLine("[b] Go back");
+                Console.Write("\n► ");
+                bool userReg = true;
+                while (userReg)
                 {
-                    Console.WriteLine("\n\nFailed to create account. The request has not been accepted.");
-                    Console.Write("\nPress ENTER to continue. ");
-                    Console.ReadLine();
+                    switch (Console.ReadLine()?.ToLower())
+                    {
+                        case "b": userReg = false; break;
+                        case "1":
+                            requestingUser.Permissions.Remove(Permission.None);
+                            requestingUser.Permissions.Add(Permission.ViewMyJournal);
+                            requestingUser.Permissions.Add(Permission.ViewMySchedule);
+                            requestingUser.Permissions.Add(Permission.RequestAppointment);
+                            requestingUser.Permissions.Add(Permission.ViewPermissionList);
+                            SaveUsersToFile();
+                            newRequest.Title = $"{requestingUser.SSN} became a patient";
+                            newRequest.MyEventType = Event.EventType.Entry;
+                            newRequest.Description = $"{requestingUser.Name} account was accepted";
+                            newRequest.StartDate = DateTime.Now;
+                            Debug.Assert(activeUser != null);
+                            newRequest.Participants.Add(new(activeUser, Role.Admin));
+                            SaveEventsToFile();
+
+                            Console.WriteLine("\nThe patient request has been accepted.");
+                            Console.WriteLine("\nPress ENTER to go back to main menu.");
+                            Console.ReadLine();
+
+                            return;
+                        case "2":
+                            try { Console.Clear(); } catch { }
+
+                            foreach (Event firstEntry in eventList)
+                            {
+                                if (firstEntry.Title == $"{requestingUser.SSN} First Entry" && firstEntry.MyEventType == Event.EventType.Entry)
+                                {
+                                    eventList.Remove(firstEntry);
+                                    break;
+                                }
+                            }
+                            users.Remove(requestingUser);
+                            SaveUsersToFile();
+                            eventList.Remove(newRequest);
+                            SaveEventsToFile();
+                            Console.WriteLine("\nYou have denied the request and deleted user.");
+                            Console.Write("\nPress ENTER to go back to main menu. ");
+                            Console.ReadLine();
+                            return;
+                        default:
+                            Console.Write("\nInvalid input, press ENTER to go back to previous menu. ");
+                            Console.ReadKey(true);
+                            continue;
+                    }
                 }
             }
-            else if (requestChoice == "2")
-            {
-                try { Console.Clear(); } catch { }
-                Console.WriteLine("\nYou have denied the request.");
-                Console.Write("\nPress ENTER to continue. ");
-                eventList.Remove(SelectedRequest);
-                SaveEventsToFile();
-                Console.ReadLine();
-            }
-            else if (requestChoice == "b") { return; }
+            else { Console.Write("\nInvalid input, press ENTER to go back to previous menu. "); Console.ReadKey(true); }
         }
-        else { Console.Write("\nInvalid input, press ENTER to go back to menu. "); Console.ReadKey(true); }
     }
     public void RequestAppointment(User activeUser)
     {

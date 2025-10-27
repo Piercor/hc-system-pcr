@@ -1402,6 +1402,23 @@ class HCSystem
                                                         break;
 
                                                     case "r":
+                                                        Console.Write("\nSelect ID of the participant to remove: ");
+                                                        string? removeParticipant = Console.ReadLine();
+                                                        if (int.TryParse(removeParticipant, out int remPartIndex) && remPartIndex > 1 && remPartIndex <= eventToEdit.Participants.Count)
+                                                        {
+                                                            Participant participantToRemove = eventToEdit.Participants[remPartIndex];
+                                                            eventToEdit.Participants.Remove(participantToRemove);
+                                                            SaveEventsToFile();
+                                                            Console.WriteLine($"\nParticipant: {participantToRemove.User.Name} - Role: {participantToRemove.ParticipantRole}, was sucessfully remove from the entry.");
+                                                            Console.Write("\nPress ENTER to continue. ");
+                                                            Console.ReadLine();
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.Write("\nInvalid input. Press ENTER to continue. ");
+                                                            Console.ReadLine();
+                                                            continue;
+                                                        }
                                                         break;
                                                     default:
                                                         Console.Write("\nInvalid input. Press ENTER to continue. ");

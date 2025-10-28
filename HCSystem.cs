@@ -1404,9 +1404,9 @@ class HCSystem
                                                     case "r":
                                                         Console.Write("\nSelect ID of the participant to remove: ");
                                                         string? removeParticipant = Console.ReadLine();
-                                                        if (int.TryParse(removeParticipant, out int remPartIndex) && remPartIndex > 1 && remPartIndex <= eventToEdit.Participants.Count)
+                                                        if (int.TryParse(removeParticipant, out int remPartIndex) && remPartIndex > 0 && remPartIndex <= eventToEdit.Participants.Count)
                                                         {
-                                                            Participant participantToRemove = eventToEdit.Participants[remPartIndex];
+                                                            Participant participantToRemove = eventToEdit.Participants[remPartIndex - 1];
                                                             eventToEdit.Participants.Remove(participantToRemove);
                                                             SaveEventsToFile();
                                                             Console.WriteLine($"\nParticipant: {participantToRemove.User.Name} - Role: {participantToRemove.ParticipantRole}, was sucessfully remove from the entry.");

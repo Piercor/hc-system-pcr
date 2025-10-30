@@ -20,7 +20,7 @@ enum Region
   Värmland,
   Västerbotten,
   Västernorrland,
-  Västmandland,
+  Västmanland,
   VästraGötaland,
   Örebro,
   Östergötland,

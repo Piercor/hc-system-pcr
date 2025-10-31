@@ -866,7 +866,7 @@ class HCSystem
         try { Console.Clear(); } catch { }
         foreach (Event scheduledEvent in eventList)
         {
-            if (scheduledEvent.Location == locations[nr - 1])
+            if (scheduledEvent.Location == locations[nr - 1] && scheduledEvent.MyEventType == Event.EventType.Appointment)
             {
                 Console.WriteLine("____________________________________________");
                 Console.WriteLine($"Title: {scheduledEvent.Title}\nDescription: {scheduledEvent.Description}" +
@@ -1498,6 +1498,22 @@ class HCSystem
                 Console.ReadKey(true);
             }
             else { Console.Write("\nSomething went wrong. Press ENTER to continue. "); Console.ReadKey(true); return; }
+        }
+    }
+    public void NavigateMenu(int selectedIndex, string[] menuOptions)
+    {
+        for (int i = 0; i < menuOptions.Length; ++i)
+        {
+            if (i == selectedIndex)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine($"  {menuOptions[i]}  ");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine($"{menuOptions[i]}");
+            }
         }
     }
 }

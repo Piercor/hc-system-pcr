@@ -17,12 +17,52 @@ while (isRunning)
     switch (currentMenu)
     {
       case Menu.Default:
-        try { Console.Clear(); } catch { }
-        Console.WriteLine("\n[1] Login \n[2] Create account\n[3] Quit");
-        Console.Write("\n► ");
-        string? input = Console.ReadLine();
 
-        switch (input)
+        bool subRunning = true;
+        string selectedOption = "";
+        int selectedIndex = 0;
+        string[] mainOptions = ["Login", "Create account", "Quit"];
+        Dictionary<string, string> menuOptions = new();
+        menuOptions.Add(mainOptions[0], "1");
+        menuOptions.Add(mainOptions[1], "2");
+        menuOptions.Add(mainOptions[2], "3");
+
+
+        // Console.WriteLine("\n[1] Login \n[2] Create account\n[3] Quit");
+        // Console.Write("\n► ");
+        // string? input = Console.ReadLine();
+        while (subRunning)
+        {
+          try { Console.Clear(); } catch { }
+          sys.NavigateMenu(selectedIndex, mainOptions);
+          switch (Console.ReadKey().Key)
+          {
+            case ConsoleKey.UpArrow:
+              selectedIndex--;
+              if (selectedIndex < 0)
+              {
+                selectedIndex = mainOptions.Length - 1;
+              }
+              break;
+            case ConsoleKey.DownArrow:
+              selectedIndex++;
+              if (selectedIndex >= mainOptions.Length)
+              {
+                selectedIndex = 0;
+              }
+              break;
+            case ConsoleKey.Enter:
+              subRunning = false;
+              selectedOption = menuOptions[mainOptions[selectedIndex]];
+              break;
+            case ConsoleKey.C:
+              subRunning = false;
+              selectedOption = "CheatersNeverLearn";
+              break;
+          }
+        }
+
+        switch (selectedOption)
         {
           case "1":
             Console.Write("\nPlease input your SSN: ");

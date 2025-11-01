@@ -231,6 +231,7 @@ while (isRunning)
             }
             if (!foundRequest)
             {
+              Debug.Assert(activeUser != null);
               string newDescription = $"User with SSN '{activeUser.SSN}' and name '{activeUser.Name}' request to be a patient.";
               Event? newEvent = new("PatientRequest", Event.EventType.Request);
               newEvent.Description = newDescription;
@@ -255,10 +256,12 @@ while (isRunning)
             break;
           case Permission.RequestAppointment:
             try { Console.Clear(); } catch { }
+            Debug.Assert(activeUser != null);
             sys.RequestAppointment(activeUser);
             break;
           case Permission.ViewPermissionList:
             try { Console.Clear(); } catch { }
+            Debug.Assert(activeUser != null);
             sys.ViewMyPermissions(activeUser);
             break;
           case Permission.HandleAccount:
@@ -276,6 +279,7 @@ while (isRunning)
             break;
           case Permission.JournalEntries:
             try { Console.Clear(); } catch { }
+            Debug.Assert(activeUser != null);
             sys.JournalEntries(activeUser);
             //Console.ReadKey(true);
             break;

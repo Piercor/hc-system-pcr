@@ -179,11 +179,9 @@ while (isRunning)
               menuText += "Quit";
               break;
           }
-          //Console.WriteLine(menuText);
           userMenu[i] = menuText;
           index += 1;
         }
-
 
         int subIndex = menuInput;
         bool subRunning = true;
@@ -215,24 +213,6 @@ while (isRunning)
           }
         }
 
-        // Console.Write("\n► ");
-        // string? menuInput = Console.ReadLine();
-        // Debug.Assert(menuInput != null);
-
-        // if (menuInput.ToLower() == "l")
-        // {
-        //   activeUser = null;
-        //   currentMenu = Menu.Default;
-        // }
-        // else if (menuInput.ToLower() == "q")
-        // { isRunning = false; }
-        // else if (!menuOptions.ContainsKey(menuInput))
-        // {
-        //   Console.Write("\nInvalid input. Press ENTER to continue. ");
-        //   Console.ReadKey(true);
-        // }
-        // else
-        // {
         switch (menuOptions[menuInput])
         {
           case Permission.None:

@@ -3,6 +3,7 @@ using System.Diagnostics.Tracing;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using System.Formats.Tar;
+using System.Net;
 
 namespace App;
 
@@ -852,36 +853,71 @@ class HCSystem
     }
     public void ScheduleOfLocation()
     {
-        Console.WriteLine("\nWhich location do you want to see schedule of?");
-        for (int i = 0; i < locations.Count; i++)
+        foreach (Region region in Region.GetValues(typeof(Region)))
         {
-            Console.WriteLine($"\n[{i + 1}]\nName: {locations[i].Name} \nAddress: {locations[i].Name}\nRegion: {locations[i].Region}");
+            int regionIndex = (int)region;
+            if (region != Region.None)
+            { Console.WriteLine($"[{regionIndex}] {region}"); }
         }
-        Console.Write("\n> ");
-        string? choice = Console.ReadLine();
+        Console.Write("\nRegion [1-21]: ");
+        string? selectedRegionIndex = Console.ReadLine();
 
-        if (!int.TryParse(choice, out int nr))
+        if (int.TryParse(selectedRegionIndex, out int selectedRegion) && selectedRegion > 0 && selectedRegion < 21)
         {
-            Console.Write("\nInvalid Location. Press ENTER to go back to previous menu. ");
-            return;
-        }
-        try { Console.Clear(); } catch { }
-        foreach (Event scheduledEvent in eventList)
-        {
-            if (scheduledEvent.Location == locations[nr - 1] && scheduledEvent.MyEventType == Event.EventType.Appointment)
+            Location? selectedLocation = null;
+            bool foundLocation = false;
+            try { Console.Clear(); } catch { }
+            Console.WriteLine("\nWhich location do you want to see schedule of?");
+            foreach (Location location in locations)
             {
-                Console.WriteLine("____________________________________________");
-                Console.WriteLine($"Title: {scheduledEvent.Title}\nDescription: {scheduledEvent.Description}" +
-                $"\nStart Date: {scheduledEvent.StartDate}\nEnd Date: {scheduledEvent.EndDate}\nType:{scheduledEvent.MyEventType}");
-                Console.WriteLine("Participants: ");
-                foreach (Participant participant in scheduledEvent.Participants)
+                if (selectedRegion == (int)location.Region)
                 {
-                    Console.WriteLine($"Name: {participant.User.Name}:\nSSN:{participant.User.SSN}\nRole: {participant.ParticipantRole}");
+                    Console.WriteLine($"ID: [{locations.IndexOf(location) + 1}] - {location.Name}");
+                    Console.WriteLine($"{location.Address}");
+                    foundLocation = true;
                 }
-                Console.WriteLine("____________________________________________");
             }
+
+            if (!foundLocation)
+            {
+                Console.Write($"\nNo location found. Press ENTER to go back to previous menu. ");
+                Console.ReadLine();
+                return;
+            }
+            Console.Write("\n> ");
+            string? choice = Console.ReadLine();
+
+            if (!int.TryParse(choice, out int nr))
+            {
+                Console.Write("\nInvalid Location. Press ENTER to go back to previous menu. ");
+                return;
+            }
+            try { Console.Clear(); } catch { }
+
+            foreach (Event scheduledEvent in eventList)
+            {
+                if (scheduledEvent.Location == locations[nr - 1] && scheduledEvent.MyEventType == Event.EventType.Appointment)
+                {
+                    Console.WriteLine("____________________________________________");
+                    Console.WriteLine($"Title: {scheduledEvent.Title}\nDescription: {scheduledEvent.Description}" +
+                    $"\nStart Date: {scheduledEvent.StartDate}\nEnd Date: {scheduledEvent.EndDate}\nType:{scheduledEvent.MyEventType}");
+                    Console.WriteLine("Participants: ");
+                    foreach (Participant participant in scheduledEvent.Participants)
+                    {
+                        Console.WriteLine($"Name: {participant.User.Name}:\nSSN:{participant.User.SSN}\nRole: {participant.ParticipantRole}");
+                    }
+                    Console.WriteLine("____________________________________________");
+                }
+            }
+            Console.Write("\nPress ENTER to go back to previous menu. ");
         }
-        Console.Write("\nPress ENTER to go back to previous menu. ");
+        else
+        {
+            Console.Write($"\nInvalid input. Press ENTER to continue. ");
+            Console.ReadLine();
+        }
+
+
     }
     public void AssignToRegion()
     {

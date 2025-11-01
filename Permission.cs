@@ -23,5 +23,7 @@ enum Permission
   ScheduleOfLocation,
   AssignRegion,
   PermHandlePerm,
+  Logout,
+  Quit
 }
 

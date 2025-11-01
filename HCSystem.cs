@@ -39,7 +39,8 @@ class HCSystem
 
         foreach (Permission perm in Enum.GetValues(typeof(Permission)))
         {
-            allPermissionList.Add(perm);
+            if (perm != Permission.Logout && perm != Permission.Quit)
+            { allPermissionList.Add(perm); }
         }
     }
     public void LoadUsersFromFile()
@@ -200,7 +201,8 @@ class HCSystem
         Console.WriteLine("\nMy permissions.\n");
         foreach (Permission permission in activeUser.Permissions)
         {
-            Console.WriteLine(permission);
+            if (permission != Permission.Logout && permission != Permission.Quit)
+                Console.WriteLine(permission);
         }
         Console.Write("\nPress ENTER to continue. ");
         Console.ReadKey(true);
@@ -1507,7 +1509,8 @@ class HCSystem
             if (i == selectedIndex)
             {
                 Console.BackgroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine($"  {menuOptions[i]}  ");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"  > {menuOptions[i]} <  ");
                 Console.ResetColor();
             }
             else

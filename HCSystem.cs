@@ -853,6 +853,7 @@ class HCSystem
     }
     public void ScheduleOfLocation()
     {
+        Console.WriteLine("\nSelect region:\n");
         foreach (Region region in Region.GetValues(typeof(Region)))
         {
             int regionIndex = (int)region;
@@ -896,7 +897,7 @@ class HCSystem
 
             foreach (Event scheduledEvent in eventList)
             {
-                if (scheduledEvent.Location == locations[nr - 1] && scheduledEvent.MyEventType == Event.EventType.Appointment)
+                if (scheduledEvent.Location == selectedLocation && scheduledEvent.MyEventType == Event.EventType.Appointment)
                 {
                     Console.WriteLine("____________________________________________");
                     Console.WriteLine($"Title: {scheduledEvent.Title}\nDescription: {scheduledEvent.Description}" +
@@ -913,8 +914,7 @@ class HCSystem
         }
         else
         {
-            Console.Write($"\nInvalid input. Press ENTER to continue. ");
-            Console.ReadLine();
+            Console.Write($"\nInvalid input. Press ENTER to go back to previous menu. ");
         }
 
 
